@@ -1,0 +1,29 @@
+version: "3.2"
+
+networks:
+  external-network:
+    driver: bridge
+
+services:
+  ms-reverse-proxy:
+    image: traefik:1.7.16
+    restart: always
+    networks:
+      - external-network
+    command: --docker
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+    - "80:80"
+  ms-main-node:
+    build: ./ms-main-node/
+    restart: always
+    networks:
+      - external-network
+    ports:
+    - "8081:8081"
+    labels:
+      - "traefik.domain=localhost"
+      - "traefik.port=8081"
+      - "traefik.frontend.rule=Host:docker-tutorial.localhost"
+      - "traefik.backend=ms-main-node"
